@@ -1,5 +1,9 @@
-import type { MediaPipeFaceMeshMediaPipeModelConfig, FaceLandmarksDetector } from '@tensorflow-models/face-landmarks-detection'
+import type {
+  MediaPipeFaceMeshMediaPipeModelConfig,
+  FaceLandmarksDetector,
+} from '@tensorflow-models/face-landmarks-detection'
 import { useCallback, useState } from 'react'
+import useLivenessDetection from './useLivenessDetection'
 
 const CAMERA_DIMENSIONS = {
   width: 400,
@@ -13,8 +17,6 @@ const DETECTOR_CONFIG: MediaPipeFaceMeshMediaPipeModelConfig = {
   refineLandmarks: true,
 }
 
-
-
 const getCameraStream = async () => {
   const stream = await navigator.mediaDevices.getUserMedia({
     video: {
@@ -27,7 +29,10 @@ const getCameraStream = async () => {
   return stream
 }
 
-const initVideo = async (videoEl: HTMLVideoElement, videoStream: MediaStream) => {
+const initVideo = async (
+  videoEl: HTMLVideoElement,
+  videoStream: MediaStream,
+) => {
   videoEl.srcObject = videoStream
   return new Promise<void>(resolve => {
     videoEl.onloadedmetadata = () => {
@@ -49,13 +54,18 @@ const createDetector = async () => {
   await tfCore.setBackend('webgl')
   await tfCore.ready()
 
-  const faceLandmarksDetection = await import('@tensorflow-models/face-landmarks-detection')
+  const faceLandmarksDetection = await import(
+    '@tensorflow-models/face-landmarks-detection'
+  )
   const model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh
 
   return faceLandmarksDetection.createDetector(model, DETECTOR_CONFIG)
 }
 
-const drawCenterFrame = (canvas: HTMLCanvasElement, videoEl: HTMLVideoElement) => {
+const drawCenterFrame = (
+  canvas: HTMLCanvasElement,
+  videoEl: HTMLVideoElement,
+) => {
   const centerX = videoEl.videoWidth / 2
   const centerY = videoEl.videoHeight / 2
   const frameSize = videoEl.videoWidth / 1.8
@@ -64,7 +74,12 @@ const drawCenterFrame = (canvas: HTMLCanvasElement, videoEl: HTMLVideoElement) =
 
   ctx.strokeStyle = 'red'
   ctx.lineWidth = 4
-  ctx.strokeRect(centerX - frameSize / 2, centerY - frameSize / 2, frameSize, frameSize)
+  ctx.strokeRect(
+    centerX - frameSize / 2,
+    centerY - frameSize / 2,
+    frameSize,
+    frameSize,
+  )
 }
 
 const drawFrame = (videoEl: HTMLVideoElement, canvasEl: HTMLCanvasElement) => {
@@ -82,7 +97,15 @@ export default function PoseDetection() {
   const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null)
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null)
   const [detector, setDetector] = useState<FaceLandmarksDetector | null>(null)
-  
+  const {} = useLivenessDetection({
+    videoEl,
+    scanStageTransitionTime: 1000,
+    scanStageTimeoutTime: 1000,
+    scanTimeoutTime: 1000,
+    numberOfAttempts: 1,
+    detector,
+  })
+
   const initCamera = useCallback(async () => {
     try {
       if (!videoEl || !canvasEl) return

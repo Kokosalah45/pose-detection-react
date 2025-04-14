@@ -100,6 +100,7 @@ export default function useLivenessDetection(props: Props) {
           stages: shuffleArray([...INITIAL_SCAN_STAGES]),
         }
       case 'RESTART_SCAN':
+        // eslint-disable-next-line no-case-declarations
         const restartStages = shuffleArray([...INITIAL_SCAN_STAGES])
         return {
           ...initialState,
